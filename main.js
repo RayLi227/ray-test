@@ -1,6 +1,4 @@
-
 // 使用CDN提供的全局变量，不使用import语句
-// 检查全局范围内可用的Supabase对象
 console.log("可用的Supabase对象:", window.supabase);
 
 const supabaseUrl = 'https://szudwsrwiirzyiwdhsmj.supabase.co';
@@ -27,16 +25,7 @@ async function insertProductionSalesData(data) {
   
   const { data: insertedData, error } = await supabase
     .from('production_sales_data')
-    .insert([
-      {
-        company_name: data.company_name,
-        season_name: data.season_name,
-        model_name: data.model_name,
-        production_quantity: data.production_quantity,
-        sale_quantity: data.sale_quantity,
-        price: data.price
-      }
-    ]);
+    .insert(data);
   
   if (error) {
     console.log('Error inserting data:');
@@ -47,39 +36,57 @@ async function insertProductionSalesData(data) {
   }
 }
 
-const defaultValues = {
-  company_name: 'Default Company',
-  season_name: 'Default Season',
-  model_name: 'Default Model',
-  production_quantity: 1000,
-  sale_quantity: 900,
-  price: 99.99
-};
-
 document.addEventListener('DOMContentLoaded', () => {
   const salesForm = document.getElementById('salesForm');
+  const fileInput = document.getElementById('fileInput');
+
+  // 处理表单提交，插入默认数据
   if (salesForm) {
     salesForm.addEventListener('submit', async (event) => {
-      console.log("Starting form submission.")
+      console.log("Starting form submission.");
       event.preventDefault();
       
-      const company_name = defaultValues.company_name;
-      const season_name = defaultValues.season_name;
-      const model_name = defaultValues.model_name;
-      const production_quantity = defaultValues.production_quantity;
-      const sale_quantity = defaultValues.sale_quantity;
-      const price = defaultValues.price;
+      const defaultValues = {
+        company_name: 'Default Company',
+        season_name: 'Default Season',
+        model_name: 'Default Model',
+        production_quantity: 1000,
+        sale_quantity: 900,
+        price: 99.99
+      };
       
-      if (isNaN(production_quantity) || isNaN(sale_quantity) || isNaN(price)) {
-        console.error('Invalid data format in form fields.');
-        return;
-      }
-      
-      const newData = { company_name, season_name, model_name, production_quantity, sale_quantity, price };
-      
-      // Insert the data
-      console.log("Sending data to Supabase")
+      const newData = [defaultValues]; // 插入默认数据
       await insertProductionSalesData(newData);
+    });
+  }
+
+  // 处理文件选择并上传数据
+  if (fileInput) {
+    fileInput.addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      
+      if (file && file.type === 'application/json') {
+        const reader = new FileReader();
+        
+        reader.onload = async function(e) {
+          try {
+            const fileData = JSON.parse(e.target.result); // 解析JSON文件内容
+            
+            if (Array.isArray(fileData)) {
+              console.log("上传的数据:", fileData);
+              await insertProductionSalesData(fileData); // 插入数据
+            } else {
+              console.error('文件格式不正确，必须是包含数据的JSON数组。');
+            }
+          } catch (error) {
+            console.error('解析JSON文件失败:', error);
+          }
+        };
+        
+        reader.readAsText(file); // 读取文件内容
+      } else {
+        console.error('请选择有效的JSON文件。');
+      }
     });
   }
 });

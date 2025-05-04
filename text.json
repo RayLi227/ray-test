@@ -1,0 +1,19 @@
+[
+    {
+      "company_name": "Company A",
+      "season_name": "Winter 2025",
+      "model_name": "Model X",
+      "production_quantity": 1500,
+      "sale_quantity": 1200,
+      "price": 120.50
+    },
+    {
+      "company_name": "Company B",
+      "season_name": "Summer 2025",
+      "model_name": "Model Y",
+      "production_quantity": 2000,
+      "sale_quantity": 1800,
+      "price": 110.75
+    }
+  ]
+  
